@@ -4,19 +4,19 @@ Smart Energy Analytics
 Estimates a household's monthly electricity bill using real appliance
 power consumption and official city-wise tariff rates.
 """
-
+ 
 import altair as alt
 import joblib
 import pandas as pd
 import streamlit as st
-
+ 
 from core_logic import (
     APPLIANCE_WATTAGE,
     TARIFF_SLABS,
     calculate_units_consumed,
     calculate_slab_bill,
 )
-
+ 
 # ============================================================
 # PAGE CONFIGURATION
 # ============================================================
@@ -26,7 +26,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
+ 
 # ============================================================
 # GLOBAL THEME (electric / energy look, used on every page)
 # ============================================================
@@ -101,24 +101,29 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
-
+ 
+ 
 # ============================================================
 # LOGIN GATE
 # ============================================================
 def check_password():
     """Returns True if the user entered the correct password."""
-
+ 
     def password_entered():
-        if st.session_state["password"] == st.secrets["app_password"]:
+        correct_password = st.secrets.get("app_password", None)
+        if correct_password is None:
+            st.session_state["password_correct"] = False
+            st.session_state["config_error"] = True
+            return
+        if st.session_state["password"] == correct_password:
             st.session_state["password_correct"] = True
             del st.session_state["password"]
         else:
             st.session_state["password_correct"] = False
-
+ 
     if st.session_state.get("password_correct", False):
         return True
-
+ 
     st.markdown(
         """
         <div class="login-wrapper">
@@ -129,7 +134,7 @@ def check_password():
         """,
         unsafe_allow_html=True,
     )
-
+ 
     _, center_col, _ = st.columns([1, 2, 1])
     with center_col:
         st.text_input(
@@ -140,31 +145,33 @@ def check_password():
             placeholder="Enter access code",
             label_visibility="collapsed",
         )
-        if "password_correct" in st.session_state and not st.session_state["password_correct"]:
-            st.error("That code didn't work. Try again.")
-
+        if st.session_state.get("config_error", False):
+            st.error("App isn't configured correctly (missing password setting). Contact the app owner.")
+        elif "password_correct" in st.session_state and not st.session_state["password_correct"]:
+            st.error("Incorrect password. Please try again.")
+ 
     st.markdown("</div></div>", unsafe_allow_html=True)
     return False
-
-
+ 
+ 
 if not check_password():
     st.stop()
-
-
+ 
+ 
 # ============================================================
 # CONSTANTS
 # ============================================================
 MODEL_PATH = "models/electricity_bill_model_v2.pkl"
 CITY_ENCODER_PATH = "models/city_encoder_v2.pkl"
-
+ 
 MONTH_NAMES = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
 ]
-
+ 
 CITIES = list(TARIFF_SLABS.keys())
-
-
+ 
+ 
 # ============================================================
 # CACHED LOADERS
 # ============================================================
@@ -173,18 +180,18 @@ def load_model_artifacts():
     model = joblib.load(MODEL_PATH)
     city_encoder = joblib.load(CITY_ENCODER_PATH)
     return model, city_encoder
-
-
+ 
+ 
 model, city_encoder = load_model_artifacts()
-
-
+ 
+ 
 # ============================================================
 # HELPER FUNCTIONS
 # ============================================================
 def format_currency(value: float) -> str:
     return f"₹ {value:,.2f}"
-
-
+ 
+ 
 def generate_energy_tips(ac, ac_hours, units_consumed):
     tips = []
     if ac >= 2 and ac_hours >= 6:
@@ -192,24 +199,24 @@ def generate_energy_tips(ac, ac_hours, units_consumed):
     if units_consumed > 400:
         tips.append(("info", "Your usage is high enough to fall into a costlier tariff slab. Reducing usage even slightly can help."))
     return tips
-
-
+ 
+ 
 # ============================================================
 # HEADER
 # ============================================================
 st.markdown('<div class="app-title">⚡ Smart Energy Analytics</div>', unsafe_allow_html=True)
 st.markdown('<p class="app-subtitle">Know your real electricity bill before it arrives.</p>', unsafe_allow_html=True)
 st.divider()
-
+ 
 # ============================================================
 # SIDEBAR — INPUT FORM
 # ============================================================
 with st.sidebar:
     st.header("Your Household")
-
+ 
     with st.form("prediction_form"):
         st.subheader("Appliances")
-
+ 
         col1, col2 = st.columns(2)
         with col1:
             fan = st.number_input("Fans", min_value=0, max_value=40, value=2)
@@ -219,9 +226,9 @@ with st.sidebar:
             tv = st.number_input("Televisions", min_value=0, max_value=30, value=1)
             monitor = st.number_input("Monitors", min_value=0, max_value=20, value=1)
             motor = st.number_input("Motor Pumps", min_value=0, max_value=10, value=0)
-
+ 
         st.subheader("Daily Usage (hours)")
-
+ 
         col3, col4 = st.columns(2)
         with col3:
             fan_hours = st.slider("Fans", 0, 24, 8, key="fan_hours")
@@ -231,14 +238,14 @@ with st.sidebar:
             tv_hours = st.slider("Television", 0, 24, 4, key="tv_hours")
             monitor_hours = st.slider("Monitor", 0, 24, 3, key="monitor_hours")
             motor_hours = st.slider("Motor Pump", 0, 24, 0, key="motor_hours")
-
+ 
         st.subheader("Location & Month")
         city = st.selectbox("City", CITIES)
         month_name = st.selectbox("Month", MONTH_NAMES, index=0)
         month = MONTH_NAMES.index(month_name) + 1
-
+ 
         submitted = st.form_submit_button("Calculate My Bill", use_container_width=True)
-
+ 
 # ============================================================
 # RESULTS
 # ============================================================
@@ -252,7 +259,7 @@ if submitted:
         motor, motor_hours,
     )
     real_bill = calculate_slab_bill(units_consumed, city)
-
+ 
     city_encoded = city_encoder.transform([city])[0]
     input_data = [[
         fan, fan_hours,
@@ -264,16 +271,26 @@ if submitted:
         month, city_encoded,
     ]]
     ml_prediction = float(model.predict(input_data)[0])
-
+ 
     st.subheader("Your Estimated Bill")
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Units Consumed", f"{units_consumed} kWh")
-    m2.metric("Estimated Bill", format_currency(real_bill))
-    m3.metric("Quick Estimate (AI)", format_currency(ml_prediction))
-    st.caption("The Estimated Bill is your accurate figure, calculated from your city's actual tariff. The AI estimate is shown alongside for comparison.")
-
+ 
+    # --- Clear hero number (real bill) + secondary AI cross-check ---
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.metric("Your Estimated Bill", format_currency(real_bill))
+        st.caption(f"Based on {units_consumed} kWh consumed, using {city}'s official tariff rates.")
+    with col2:
+        diff = ml_prediction - real_bill
+        st.metric(
+            "AI Cross-Check",
+            format_currency(ml_prediction),
+            delta=f"{format_currency(diff)} vs actual",
+            delta_color="off",
+        )
+        st.caption("A secondary AI-based sanity check, not your real bill.")
+ 
     st.divider()
-
+ 
     with st.expander("See how this bill was calculated", expanded=True):
         slabs = TARIFF_SLABS[city]
         remaining = units_consumed
@@ -294,7 +311,7 @@ if submitted:
                 previous_limit = units_upto
         st.dataframe(pd.DataFrame(breakdown_rows), hide_index=True, use_container_width=True)
         st.metric("Total", format_currency(real_bill))
-
+ 
     st.subheader("Ways to Save")
     tips = generate_energy_tips(ac, ac_hours, units_consumed)
     if tips:
@@ -302,9 +319,9 @@ if submitted:
             getattr(st, tip_type)(message)
     else:
         st.success("Your usage looks efficient. No changes needed right now.")
-
+ 
     st.divider()
-
+ 
     with st.expander("What's driving your bill"):
         appliance_inputs = {
             "Air Conditioners": (ac, ac_hours, APPLIANCE_WATTAGE["AirConditioner"]),
@@ -314,13 +331,13 @@ if submitted:
             "Television": (tv, tv_hours, APPLIANCE_WATTAGE["Television"]),
             "Monitor": (monitor, monitor_hours, APPLIANCE_WATTAGE["Monitor"]),
         }
-
+ 
         contributions = {
             name: count * hours * watt
             for name, (count, hours, watt) in appliance_inputs.items()
         }
         total = sum(contributions.values())
-
+ 
         if total == 0:
             st.info("Add some appliances to see what's driving your bill.")
         else:
@@ -328,7 +345,7 @@ if submitted:
             top_name = sorted_items[0][0]
             st.write(f"**{top_name}** has the biggest effect on your bill.")
             st.write("")
-
+ 
             for name, value in sorted_items:
                 share = value / total
                 if share >= 0.30:
@@ -339,15 +356,15 @@ if submitted:
                     tag = "Low impact"
                 else:
                     tag = "Not in use"
-
+ 
                 col_a, col_b = st.columns([3, 1])
                 with col_a:
                     st.progress(share, text=name)
                 with col_b:
                     st.caption(tag)
-
+ 
         st.caption("See where your electricity is really going.")
-
+ 
     with st.expander("Your inputs"):
         summary_df = pd.DataFrame({
             "Appliance": ["Fans", "Refrigerators", "Air Conditioners", "Televisions", "Monitors", "Motor Pumps"],
@@ -356,6 +373,6 @@ if submitted:
         })
         st.dataframe(summary_df, hide_index=True, use_container_width=True)
         st.caption(f"{city} · {month_name}")
-
+ 
 else:
     st.info("Fill in your household details and select **Calculate My Bill** to get started.")
