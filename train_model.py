@@ -47,7 +47,13 @@ X_train, X_test, y_train, y_test = train_test_split(
 # ============================================================
 # 5. Train the model
 # ============================================================
-model = RandomForestRegressor(n_estimators=200, random_state=42)
+model = RandomForestRegressor(
+    n_estimators=100,       # fewer trees (still plenty)
+    max_depth=12,           # limits how deep each tree grows
+    min_samples_leaf=5,     # avoids overly specific tiny leaves
+    n_jobs=-1,
+    random_state=42
+)
 model.fit(X_train, y_train)
 
 # ============================================================
@@ -61,6 +67,6 @@ print(f"Test R² score: {test_score:.4f}")
 # ============================================================
 # 7. Save the model + encoder
 # ============================================================
-joblib.dump(model, "models/electricity_bill_model_v2.pkl")
-joblib.dump(city_encoder, "models/city_encoder_v2.pkl")
+joblib.dump(model, "models/electricity_bill_model_v2.pkl", compress=3)
+joblib.dump(city_encoder, "models/city_encoder_v2.pkl", compress=3)
 print("\n✅ Saved new model to models/electricity_bill_model_v2.pkl")
