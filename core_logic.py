@@ -201,6 +201,80 @@ CATEGORY_HELPER_TEXT = {
 
 
 # ============================================================
+# Navigation tree — drives the sidebar -> center drill-down flow.
+# category -> subtype -> [appliance_key, ...]
+# If a subtype has exactly 1 appliance_key, the UI skips the
+# variant-selection screen and goes straight to the input screen.
+# ============================================================
+NAV_TREE = {
+    "❄️ Cooling & Climate": {
+        "Air Conditioner": {
+            "Window AC": ["WindowAC_1.0Ton", "WindowAC_1.5Ton", "WindowAC_2.0Ton"],
+            "Split AC": ["SplitAC_1.0Ton", "SplitAC_1.5Ton", "SplitAC_2.0Ton"],
+        },
+        "Air Cooler": ["Cooler"],
+        "Ceiling Fan": ["CeilingFan_Standard", "CeilingFan_BLDC"],
+        "Room Heater": ["RoomHeater_Fan", "RoomHeater_OilFilled"],
+        "Exhaust Fan": ["ExhaustFan"],
+    },
+    "🍳 Kitchen": {
+        "Refrigerator": ["Refrigerator_SingleDoor", "Refrigerator_DoubleDoor", "Refrigerator_SideBySide"],
+        "Microwave Oven": ["MicrowaveOven"],
+        "Induction Cooktop": ["InductionCooktop"],
+        "Air Fryer": ["AirFryer"],
+        "Electric Kettle": ["ElectricKettle"],
+        "Mixer Grinder": ["MixerGrinder"],
+    },
+    "💡 Lighting & Routine": {
+        "LED Bulb": ["LEDBulb"],
+        "Tube Light": ["TubeLight_LED", "TubeLight_Legacy"],
+        "WiFi Router": ["WiFiRouter"],
+    },
+    "🚿 Water & Laundry": {
+        "Washing Machine": ["WashingMachine_Cold", "WashingMachine_Hot"],
+        "Geyser": ["Geyser_Instant", "Geyser_Storage"],
+        "Motor Pump": ["MotorPump_Half_HP", "MotorPump_One_HP"],
+        "Water Purifier": ["WaterPurifier_RO"],
+    },
+    "📺 Entertainment & IT": {
+        "Television": ["Television_Small", "Television_Large", "Television_Old_CRT"],
+        "Monitor": ["Monitor"],
+        "Laptop Charger": ["Laptop_Charger"],
+        "Gaming Console": ["GamingConsole"],
+    },
+    "🧺 Utility": {
+        "Electric Iron": ["ElectricIron_Dry", "ElectricIron_Steam"],
+        "Vacuum Cleaner": ["VacuumCleaner"],
+    },
+    "📱 Mobile Charging": {
+        "Mobile Charger": ["MobileCharger_Slow", "MobileCharger_Standard", "MobileCharger_Fast", "MobileCharger_UltraFast"],
+    },
+}
+
+CATEGORY_CAPTIONS = {
+    "❄️ Cooling & Climate": "Choose the type of cooling/heating equipment you use",
+    "🍳 Kitchen": "Choose a kitchen appliance",
+    "💡 Lighting & Routine": "Choose a lighting or always-on device",
+    "🚿 Water & Laundry": "Choose a water or laundry appliance",
+    "📺 Entertainment & IT": "Choose an entertainment or IT device",
+    "🧺 Utility": "Choose a utility appliance",
+    "📱 Mobile Charging": "Choose your charger type",
+}
+
+SUBTYPE_CAPTIONS = {
+    "Air Conditioner": "Not sure which type? Split AC has two separate units (indoor + outdoor); Window AC is a single box unit.",
+    "Refrigerator": "Check your fridge's size/capacity — usually printed inside the door or on the purchase invoice.",
+    "Tube Light": "LED tube lights are slim and bright-white; older tube lights are thicker glass tubes.",
+    "Washing Machine": "Choose 'With Water Heater' only if your machine has a built-in heating element.",
+    "Geyser": "Instant geysers are small (3-6L) and heat on-demand; storage geysers have a larger tank (10-25L).",
+    "Motor Pump": "Check the HP rating on the pump's nameplate/sticker.",
+    "Television": "Screen size is the best guide — measure diagonally if unsure.",
+    "Electric Iron": "Steam irons have a water tank/steam vents; dry irons don't.",
+    "Mobile Charger": "Check the wattage printed on your charger brick (e.g. '5V⎓3A' ≈ 15W) or your phone's box.",
+}
+
+
+# ============================================================
 # Default / typical daily usage hours per appliance
 # ------------------------------------------------------------
 # Used ONLY when the user taps "Not sure?" next to a slider in the
