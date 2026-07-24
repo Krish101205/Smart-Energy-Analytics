@@ -4,7 +4,7 @@
 
 Smart Energy Analytics is a Streamlit web app that estimates an Indian household's monthly electricity bill from actual appliance usage — appliance type, count, and daily hours — using real per-appliance wattage, duty-cycle correction, and each city's genuine slab-wise DISCOM tariff structure. It also breaks down exactly which appliances are driving the bill.
 
-🔗 **Live app:** _add your Streamlit Cloud link here_
+🔗 **Live app:** [smart-energy-analytics.streamlit.app](https://smart-energy-analytics.streamlit.app/) — _password protected, reach out for access_
 
 ---
 
@@ -37,7 +37,7 @@ Units (kWh) = Σ [ Count × Rated Wattage × Duty Cycle × Daily Hours × 30 ] �
 
 | Home | Appliance Selection |
 |---|---|
-| ![Home](assets/home.png) | ![Appliances](assets/appliances.png) |
+| ![Home](assets/home.png) | ![Appliances](assets/appliance.png) |
 | Household setup, city/month selection | Category → subtype drill-down |
 
 | Bill Result | Contribution Breakdown |
