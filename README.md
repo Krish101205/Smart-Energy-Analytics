@@ -37,10 +37,12 @@ Units (kWh) = Σ [ Count × Rated Wattage × Duty Cycle × Daily Hours × 30 ] �
 
 | Home | Appliance Selection |
 |---|---|
+| ![Home](assets/home.png) | ![Appliances](assets/appliances.png) |
 | Household setup, city/month selection | Category → subtype drill-down |
 
 | Bill Result | Contribution Breakdown |
 |---|---|
+| ![Bill Result](assets/bill-result.png) | ![Breakdown](assets/breakdown.png) |
 | Estimated bill with slab-wise table | Appliance-wise impact ranking |
 
 ## Tech stack
@@ -103,4 +105,4 @@ This started as a 7th-semester B.Tech (EEE) minor project at GGSIPU, New Delhi. 
 
 ## License
 
-_Add a license (MIT recommended for a portfolio project) — see "Is this ready" note below._
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
